@@ -83,8 +83,8 @@ Visit **http://localhost:8000** to access the application.
 
 #### 1. Clone the Repository
 ```cmd
-git clone https://github.com/yourusername/CMS.git
-cd CMS
+git clone https://github.com/yourusername/Complain-Management-system.git
+cd Complain-Management-system
 ```
 
 #### 2. Create Virtual Environment

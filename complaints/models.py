@@ -58,9 +58,10 @@ class Complaint(models.Model):
     """Main complaint model"""
     STATUS_CHOICES = [
         ('PENDING', 'Pending'),
-        ('IN_PROGRESS', 'In Progress'),
+        ('PROCESSING', 'Processing'),
         ('RESOLVED', 'Resolved'),
-        ('CLOSED', 'Closed'),
+        ('COMPLETED', 'Completed'),
+        ('REJECTED', 'Rejected'),
     ]
     CATEGORY_CHOICES = UserProfile.CATEGORY_CHOICES
 
@@ -127,50 +128,86 @@ class Complaint(models.Model):
         if not self.assigned_to and self.category:
             # Determine if complaint is from faculty or student
             user_role = None
+            user_department = None
             if self.user and hasattr(self.user, 'profile'):
                 user_role = self.user.profile.role
+                user_department = self.user.profile.department
             
             # If complaint is from faculty, assign to HOD
             if user_role == 'faculty':
-                # Find HOD with matching category and fewest open complaints
-                matching_hod = User.objects.filter(
-                    profile__role='hod',
-                    profile__category=self.category
-                ).annotate(
-                    open_count=Count(
-                        'assigned_complaints',
-                        filter=Q(assigned_complaints__status__in=['PENDING', 'IN_PROGRESS'])
-                    )
-                ).order_by('open_count', 'date_joined').first()
+                # First try: Find HOD with matching department (preferred)
+                if user_department:
+                    matching_hod = User.objects.filter(
+                        profile__role='hod',
+                        profile__department=user_department
+                    ).annotate(
+                        open_count=Count(
+                            'assigned_complaints',
+                            filter=Q(assigned_complaints__status__in=['PENDING', 'PROCESSING'])
+                        )
+                    ).order_by('open_count', 'date_joined').first()
+                    
+                    if matching_hod:
+                        self.assigned_to = matching_hod
                 
-                if matching_hod:
-                    self.assigned_to = matching_hod
-                else:
-                    # Fallback: any HOD
-                    fallback_hod = User.objects.filter(profile__role='hod').order_by('date_joined').first()
+                # Second try: Find HOD with matching category if department match failed
+                if not self.assigned_to:
+                    matching_hod = User.objects.filter(
+                        profile__role='hod',
+                        profile__category=self.category
+                    ).annotate(
+                        open_count=Count(
+                            'assigned_complaints',
+                            filter=Q(assigned_complaints__status__in=['PENDING', 'PROCESSING'])
+                        )
+                    ).order_by('open_count', 'date_joined').first()
+                    
+                    if matching_hod:
+                        self.assigned_to = matching_hod
+                
+                # Fallback: any HOD
+                if not self.assigned_to:
+                    fallback_hod = User.objects.filter(profile__role='hod').annotate(
+                        open_count=Count(
+                            'assigned_complaints',
+                            filter=Q(assigned_complaints__status__in=['PENDING', 'PROCESSING'])
+                        )
+                    ).order_by('open_count', 'date_joined').first()
                     if fallback_hod:
                         self.assigned_to = fallback_hod
-            else:
-                # If complaint is from student, assign to faculty (existing logic)
+            
+            # If complaint is from student, assign to faculty with matching category
+            elif user_role == 'student':
+                # Find faculty with matching category and fewest open complaints
                 matching_faculty = User.objects.filter(
                     profile__role='faculty',
                     profile__category=self.category
                 ).annotate(
                     open_count=Count(
                         'assigned_complaints',
-                        filter=Q(assigned_complaints__status__in=['PENDING', 'IN_PROGRESS'])
+                        filter=Q(assigned_complaints__status__in=['PENDING', 'PROCESSING'])
                     )
                 ).order_by('open_count', 'date_joined').first()
                 
                 if matching_faculty:
                     self.assigned_to = matching_faculty
                 else:
-                    # Fallback: any admin/staff user
-                    fallback_user = User.objects.filter(
-                        Q(is_staff=True) | Q(profile__role='admin')
-                    ).order_by('date_joined').first()
-                    if fallback_user:
-                        self.assigned_to = fallback_user
+                    # Fallback: any faculty member (if no category match)
+                    fallback_faculty = User.objects.filter(profile__role='faculty').annotate(
+                        open_count=Count(
+                            'assigned_complaints',
+                            filter=Q(assigned_complaints__status__in=['PENDING', 'PROCESSING'])
+                        )
+                    ).order_by('open_count', 'date_joined').first()
+                    if fallback_faculty:
+                        self.assigned_to = fallback_faculty
+                    else:
+                        # Last fallback: any admin/staff user
+                        fallback_user = User.objects.filter(
+                            Q(is_staff=True) | Q(profile__role='admin')
+                        ).order_by('date_joined').first()
+                        if fallback_user:
+                            self.assigned_to = fallback_user
         
         super().save(*args, **kwargs)
     

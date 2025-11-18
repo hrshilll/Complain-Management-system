@@ -5,106 +5,357 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Complaint Management System{% endblock %}</title>
     
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Heroicons -->
+    <script src="https://cdn.jsdelivr.net/npm/heroicons@2.0.18/24/outline/index.js" type="module"></script>
+    
     <!-- Custom CSS -->
     <style>
-        .gradient-bg {
-            background: linear-gradient(135deg, #0d9488 0%, #059669 100%);
+        * {
+            font-family: 'Inter', sans-serif;
         }
-        .card-shadow {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        
+        body {
+            background-color: #0d0f18;
+            color: #e2e8f0;
         }
-        .hover-scale:hover {
-            transform: scale(1.02);
-            transition: transform 0.2s ease-in-out;
+        
+        /* Aurora Background */
+        .aurora-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+        
+        .aurora-bg::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(
+                circle at 20% 30%,
+                rgba(77, 208, 225, 0.15) 0%,
+                transparent 50%
+            ),
+            radial-gradient(
+                circle at 80% 70%,
+                rgba(179, 136, 255, 0.15) 0%,
+                transparent 50%
+            ),
+            radial-gradient(
+                circle at 50% 50%,
+                rgba(100, 181, 246, 0.12) 0%,
+                transparent 50%
+            );
+            animation: aurora-float 20s ease-in-out infinite;
+        }
+        
+        .aurora-bg::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 15% 25%, rgba(77, 208, 225, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 75%, rgba(179, 136, 255, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 60% 40%, rgba(100, 181, 246, 0.06) 0%, transparent 40%);
+            animation: aurora-float 25s ease-in-out infinite reverse;
+        }
+        
+        /* @keyframes aurora-float {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            33% {
+                transform: translate(30px, -30px) rotate(120deg);
+            }
+            66% {
+                transform: translate(-20px, 20px) rotate(240deg);
+            }
+        } */
+        
+        /* Floating Orbs */
+        .floating-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.3;
+            animation: float-orb 15s ease-in-out infinite;
+        }
+        
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: rgba(77, 208, 225, 0.4);
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+        
+        .orb-2 {
+            width: 300px;
+            height: 300px;
+            background: rgba(179, 136, 255, 0.4);
+            top: 60%;
+            right: 15%;
+            animation-delay: 5s;
+        }
+        
+        .orb-3 {
+            width: 350px;
+            height: 350px;
+            background: rgba(100, 181, 246, 0.3);
+            bottom: 20%;
+            left: 50%;
+            animation-delay: 10s;
+        }
+        
+        @keyframes float-orb {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            50% {
+                transform: translate(50px, -50px) scale(1.1);
+            }
+        }
+        
+        /* Glass Morphism */
+        .glass {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        
+        .glass-strong {
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Navbar */
+        .navbar-glass {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            background: rgba(13, 15, 24, 0.7);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Content Wrapper */
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+        }
+        
+        /* Smooth Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Glow Effects */
+        .glow-teal {
+            box-shadow: 0 0 20px rgba(77, 208, 225, 0.3);
+        }
+        
+        .glow-violet {
+            box-shadow: 0 0 20px rgba(179, 136, 255, 0.3);
+        }
+        
+        .glow-blue {
+            box-shadow: 0 0 20px rgba(100, 181, 246, 0.3);
+        }
+        
+        .hover-glow:hover {
+            box-shadow: 0 0 30px rgba(77, 208, 225, 0.4);
+            transition: box-shadow 0.3s ease;
+        }
+        
+        /* Active Link Glow */
+        .nav-link-active {
+            color: #4dd0e1;
+            text-shadow: 0 0 10px rgba(77, 208, 225, 0.5);
+        }
+        
+        /* Mobile Menu */
+        .mobile-menu {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            background: rgba(13, 15, 24, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.15);
         }
     </style>
     
     {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <!-- Navigation -->
-    <nav class="gradient-bg shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <a href="{% url 'dashboard' %}" class="flex-shrink-0 flex items-center">
-                        <h1 class="text-white text-xl font-bold">CMS</h1>
-                    </a>
-                </div>
-                
-                <div class="flex items-center space-x-4">
-                    {% if user.is_authenticated %}
-                        <div class="flex items-center space-x-4">
-                            <span class="text-white text-sm">
-                                Welcome, {{ user.get_full_name|default:user.username }}
-                            </span>
-                            <div class="relative">
-                                <button class="text-white hover:text-teal-200 focus:outline-none" onclick="toggleNotifications()">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                                    </svg>
-                                    <!-- Notification badge will be added via JavaScript -->
-                                </button>
+<body>
+    <!-- Aurora Background -->
+    <div class="aurora-bg">
+        <div class="floating-orb orb-1"></div>
+        <div class="floating-orb orb-2"></div>
+        <div class="floating-orb orb-3"></div>
+    </div>
+    
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+        <!-- Navigation -->
+        <nav class="navbar-glass fixed top-0 left-0 right-0 z-50 fade-in">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center">
+                        <a href="{% url 'dashboard' %}" class="flex items-center space-x-2 group">
+                            <div class="w-10 h-10 rounded-xl glass flex items-center justify-center group-hover:glow-teal transition-all">
+                                <span class="text-xl font-bold bg-gradient-to-r from-[#4dd0e1] to-[#b388ff] bg-clip-text text-transparent">CMS</span>
                             </div>
-                            <a href="{% url 'logout' %}" class="text-white hover:text-teal-200 text-sm">
-                                Logout
+                            <span class="text-white font-semibold hidden sm:block">Complaint Management</span>
+                        </a>
+                    </div>
+                    
+                    <!-- Desktop Navigation -->
+                    <div class="hidden md:flex items-center space-x-6">
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'dashboard' %}" class="text-gray-300 hover:text-[#4dd0e1] transition-colors {% if request.resolver_match.url_name == 'dashboard' %}nav-link-active{% endif %}">
+                                Dashboard
                             </a>
-                        </div>
-                    {% else %}
-                        <a href="{% url 'login' %}" class="text-white hover:text-teal-200 text-sm">
-                            Login
-                        </a>
-                        <a href="{% url 'register' %}" class="bg-white text-teal-600 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-100">
-                            Register
-                        </a>
-                    {% endif %}
+                            <a href="{% url 'complaint_list' %}" class="text-gray-300 hover:text-[#4dd0e1] transition-colors {% if request.resolver_match.url_name == 'complaint_list' %}nav-link-active{% endif %}">
+                                Complaints
+                            </a>
+                            <a href="{% url 'faculty_directory' %}" class="text-gray-300 hover:text-[#4dd0e1] transition-colors {% if request.resolver_match.url_name == 'faculty_directory' %}nav-link-active{% endif %}">
+                                Directory
+                            </a>
+                            <div class="flex items-center space-x-3 pl-4 border-l border-white/10">
+                                <span class="text-sm text-gray-400">
+                                    {{ user.get_full_name|default:user.username }}
+                                </span>
+                                <a href="{% url 'logout' %}" class="glass px-4 py-2 rounded-xl text-sm font-medium text-white hover:glow-teal transition-all">
+                                    Logout
+                                </a>
+                            </div>
+                        {% else %}
+                            <a href="{% url 'login' %}" class="text-gray-300 hover:text-[#4dd0e1] transition-colors">
+                                Login
+                            </a>
+                            <a href="{% url 'register' %}" class="glass px-4 py-2 rounded-xl text-sm font-medium text-white hover:glow-teal transition-all">
+                                Register
+                            </a>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Mobile Menu Button -->
+                    <div class="md:hidden">
+                        <button onclick="toggleMobileMenu()" class="text-gray-300 hover:text-[#4dd0e1] transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <!-- Messages -->
-        {% if messages %}
-            <div class="mb-6">
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} bg-{% if message.tags == 'error' %}red{% elif message.tags == 'success' %}green{% elif message.tags == 'warning' %}yellow{% else %}blue{% endif %}-100 border border-{% if message.tags == 'error' %}red{% elif message.tags == 'success' %}green{% elif message.tags == 'warning' %}yellow{% else %}blue{% endif %}-400 text-{% if message.tags == 'error' %}red{% elif message.tags == 'success' %}green{% elif message.tags == 'warning' %}yellow{% else %}blue{% endif %}-700 px-4 py-3 rounded mb-4" role="alert">
-                        {{ message }}
-                    </div>
-                {% endfor %}
+            
+            <!-- Mobile Menu -->
+            <div id="mobileMenu" class="hidden md:hidden mobile-menu rounded-b-2xl mx-4 mb-4 p-4">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="block py-2 text-gray-300 hover:text-[#4dd0e1] transition-colors">Dashboard</a>
+                    <a href="{% url 'complaint_list' %}" class="block py-2 text-gray-300 hover:text-[#4dd0e1] transition-colors">Complaints</a>
+                    <a href="{% url 'faculty_directory' %}" class="block py-2 text-gray-300 hover:text-[#4dd0e1] transition-colors">Directory</a>
+                    <div class="border-t border-white/10 my-2"></div>
+                    <span class="block py-2 text-sm text-gray-400">{{ user.get_full_name|default:user.username }}</span>
+                    <a href="{% url 'logout' %}" class="block py-2 text-gray-300 hover:text-[#4dd0e1] transition-colors">Logout</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="block py-2 text-gray-300 hover:text-[#4dd0e1] transition-colors">Login</a>
+                    <a href="{% url 'register' %}" class="block py-2 text-gray-300 hover:text-[#4dd0e1] transition-colors">Register</a>
+                {% endif %}
             </div>
-        {% endif %}
+        </nav>
 
-        <!-- Page Content -->
-        {% block content %}{% endblock %}
-    </main>
+        <!-- Main Content -->
+        <main class="pt-20 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <!-- Messages -->
+            {% if messages %}
+                <div class="mb-6 space-y-3 fade-in">
+                    {% for message in messages %}
+                        <div class="flash-message glass rounded-2xl p-4 flex items-start space-x-3 fade-in {% if message.tags == 'error' %}border-l-4 border-red-400{% elif message.tags == 'success' %}border-l-4 border-green-400{% elif message.tags == 'warning' %}border-l-4 border-yellow-400{% else %}border-l-4 border-blue-400{% endif %}">
+                            <div class="flex-shrink-0">
+                                {% if message.tags == 'error' %}
+                                    <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                {% elif message.tags == 'success' %}
+                                    <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                {% elif message.tags == 'warning' %}
+                                    <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                    </svg>
+                                {% else %}
+                                    <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                {% endif %}
+                            </div>
+                            <p class="text-sm text-gray-200 flex-1">{{ message }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
 
-    <!-- Footer -->
-    <footer class="bg-slate-800 text-white py-8 mt-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center">
-                <p>&copy; 2024 Complaint Management System. All rights reserved.</p>
+            <!-- Page Content -->
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-20 py-8 border-t border-white/10">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <p class="text-gray-400 text-sm">&copy; 2024 Complaint Management System. All rights reserved.</p>
+                </div>
             </div>
-        </div>
-    </footer>
+        </footer>
+    </div>
 
     <!-- JavaScript -->
     <script>
-        function toggleNotifications() {
-            // Toggle notifications dropdown
-            console.log('Toggle notifications');
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
         }
         
         // Auto-hide messages after 5 seconds
+        // Auto-hide only flash messages after 5 seconds
         setTimeout(function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function(alert) {
-                alert.style.transition = 'opacity 0.5s';
+            const alerts = document.querySelectorAll('.flash-message');
+                alerts.forEach(function(alert) {
+                alert.style.transition = 'opacity 0.5s, transform 0.5s';
                 alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-10px)';
                 setTimeout(function() {
                     alert.remove();
                 }, 500);

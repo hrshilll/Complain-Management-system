@@ -3,22 +3,22 @@
 {% block title %}{{ complaint.complaint_no }} - Complaint Management System{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+<div class="max-w-6xl mx-auto fade-in">
     <!-- Header -->
     <div class="mb-8">
         <div class="flex justify-between items-start">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900">{{ complaint.complaint_no }}</h1>
-                <p class="mt-2 text-gray-600">{{ complaint.title }}</p>
+                <h1 class="text-3xl font-bold text-white mb-2">{{ complaint.complaint_no }}</h1>
+                <p class="text-gray-400">{{ complaint.title }}</p>
             </div>
             <div class="flex space-x-3">
                 {% if can_edit %}
-                    <a href="{% url 'update_complaint' complaint.complaint_no %}" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:shadow-lg">
+                    <a href="{% url 'update_complaint' complaint.complaint_no %}" class="glass px-4 py-2 rounded-xl text-sm font-medium text-white hover:glow-teal transition-all">
                         Edit
                     </a>
                 {% endif %}
                 {% if can_assign %}
-                    <a href="{% url 'assign_complaint' complaint.complaint_no %}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:shadow-lg">
+                    <a href="{% url 'assign_complaint' complaint.complaint_no %}" class="glass px-4 py-2 rounded-xl text-sm font-medium text-white hover:glow-teal transition-all bg-gradient-to-r from-green-500/20 to-emerald-500/20">
                         Assign
                     </a>
                 {% endif %}
@@ -30,239 +30,238 @@
         <!-- Main Content -->
         <div class="lg:col-span-2 space-y-6">
             <!-- Complaint Details -->
-            <div class="bg-white shadow rounded-lg">
-                <div class="px-4 py-5 sm:p-6">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Complaint Details</h3>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Category</label>
-                            <div class="mt-1">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
-                                    {{ complaint.get_category_display }}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Status</label>
-                            <div class="mt-1">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                    {% if complaint.status == 'PENDING' %}bg-yellow-100 text-yellow-800
-                                    {% elif complaint.status == 'IN_PROGRESS' %}bg-blue-100 text-blue-800
-                                    {% elif complaint.status == 'RESOLVED' %}bg-green-100 text-green-800
-                                    {% elif complaint.status == 'CLOSED' %}bg-gray-100 text-gray-800
-                                    {% endif %}">
-                                    {{ complaint.get_status_display }}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Created</label>
-                            <p class="mt-1 text-sm text-gray-900">{{ complaint.created_at|date:"M d, Y H:i" }}</p>
-                        </div>
+            <div class="glass rounded-2xl p-6">
+                <h3 class="text-lg font-semibold text-white mb-4">Complaint Details</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Category</label>
+                        <span class="px-3 py-1 text-xs font-semibold rounded-full bg-[#b388ff]/20 text-[#b388ff]">
+                            {{ complaint.get_category_display }}
+                        </span>
                     </div>
 
-                    <div class="mt-6">
-                        <label class="block text-sm font-medium text-gray-700">Description</label>
-                        <div class="mt-1 p-4 bg-gray-50 rounded-md">
-                            <p class="text-sm text-gray-900 whitespace-pre-wrap">{{ complaint.description }}</p>
-                        </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Status</label>
+                        <span class="px-3 py-1 text-xs font-semibold rounded-full
+                            {% if complaint.status == 'PENDING' %}bg-yellow-500/20 text-yellow-300
+                            {% elif complaint.status == 'PROCESSING' %}bg-blue-500/20 text-blue-300
+                            {% elif complaint.status == 'RESOLVED' %}bg-green-500/20 text-green-300
+                            {% elif complaint.status == 'COMPLETED' %}bg-emerald-500/20 text-emerald-300
+                            {% elif complaint.status == 'REJECTED' %}bg-red-500/20 text-red-300
+                            {% else %}bg-gray-500/20 text-gray-300
+                            {% endif %}">
+                            {{ complaint.get_status_display }}
+                        </span>
                     </div>
 
-                    {% if complaint.attachment %}
-                    <div class="mt-6">
-                        <label class="block text-sm font-medium text-gray-700">Attachment</label>
-                        <div class="mt-1">
-                            <a href="{{ complaint.attachment.url }}" target="_blank" class="text-teal-600 hover:text-teal-500 font-medium">
-                                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
-                                Download Attachment
-                            </a>
-                        </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Created</label>
+                        <p class="text-sm text-white">{{ complaint.created_at|date:"M d, Y H:i" }}</p>
                     </div>
-                    {% endif %}
-
-                    {% if complaint.remarks %}
-                    <div class="mt-6">
-                        <label class="block text-sm font-medium text-gray-700">Remarks</label>
-                        <div class="mt-1 p-4 bg-gray-50 rounded-md">
-                            <p class="text-sm text-gray-900 whitespace-pre-wrap">{{ complaint.remarks }}</p>
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    {% if complaint.admin_remarks %}
-                    <div class="mt-6">
-                        <label class="block text-sm font-medium text-gray-700">Admin Remarks</label>
-                        <div class="mt-1 p-4 bg-teal-50 rounded-md">
-                            <p class="text-sm text-gray-900 whitespace-pre-wrap">{{ complaint.admin_remarks }}</p>
-                        </div>
-                    </div>
-                    {% endif %}
                 </div>
+
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Description</label>
+                    <div class="mt-1 p-4 glass-strong rounded-xl">
+                        <p class="text-sm text-gray-200 whitespace-pre-wrap">{{ complaint.description }}</p>
+                    </div>
+                </div>
+
+                {% if complaint.attachment %}
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Attachment</label>
+                    <a href="{{ complaint.attachment.url }}" target="_blank" class="text-[#4dd0e1] hover:text-[#b388ff] transition-colors inline-flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Download Attachment
+                    </a>
+                </div>
+                {% endif %}
+
+                {% if complaint.remarks %}
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Remarks</label>
+                    <div class="mt-1 p-4 glass-strong rounded-xl">
+                        <p class="text-sm text-gray-200 whitespace-pre-wrap">{{ complaint.remarks }}</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if complaint.admin_remarks %}
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Admin Remarks</label>
+                    <div class="mt-1 p-4 glass-strong rounded-xl border-l-4 border-[#4dd0e1]">
+                        <p class="text-sm text-gray-200 whitespace-pre-wrap">{{ complaint.admin_remarks }}</p>
+                    </div>
+                </div>
+                {% endif %}
             </div>
 
             <!-- History -->
-            <div class="bg-white shadow rounded-lg">
-                <div class="px-4 py-5 sm:p-6">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Complaint History</h3>
-                    
-                    {% if history %}
-                        <div class="flow-root">
-                            <ul class="-mb-8">
-                                {% for entry in history %}
-                                <li>
-                                    <div class="relative pb-8">
-                                        {% if not forloop.last %}
-                                            <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
-                                        {% endif %}
-                                        <div class="relative flex space-x-3">
-                                            <div>
-                                                <span class="h-8 w-8 rounded-full bg-teal-500 flex items-center justify-center ring-8 ring-white">
-                                                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
-                                                    </svg>
-                                                </span>
-                                            </div>
-                                            <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
-                                                <div>
-                                                    <p class="text-sm text-gray-500">
-                                                        {% if entry.from_status and entry.to_status %}
-                                                            Status changed from <span class="font-medium">{{ entry.from_status }}</span> to <span class="font-medium">{{ entry.to_status }}</span>
-                                                        {% elif entry.to_status %}
-                                                            Status set to <span class="font-medium">{{ entry.to_status }}</span>
-                                                        {% else %}
-                                                            {{ entry.remarks }}
-                                                        {% endif %}
-                                                    </p>
-                                                    {% if entry.remarks %}
-                                                        <p class="mt-1 text-sm text-gray-600">{{ entry.remarks }}</p>
-                                                    {% endif %}
-                                                </div>
-                                                <div class="text-right text-sm whitespace-nowrap text-gray-500">
-                                                    <time datetime="{{ entry.timestamp|date:'c' }}">{{ entry.timestamp|timesince }} ago</time>
-                                                    <p class="text-xs">{{ entry.changed_by.get_full_name|default:entry.changed_by.username }}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-                                {% endfor %}
-                            </ul>
+            <div class="glass rounded-2xl p-6">
+                <h3 class="text-lg font-semibold text-white mb-4">Complaint History</h3>
+                
+                {% if history %}
+                    <div class="space-y-4">
+                        {% for entry in history %}
+                        <div class="flex items-start space-x-4 p-4 glass-strong rounded-xl">
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 rounded-full bg-[#4dd0e1]/20 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-[#4dd0e1]" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm text-gray-300">
+                                    {% if entry.from_status and entry.to_status %}
+                                        Status changed from <span class="font-medium text-white">{{ entry.from_status }}</span> to <span class="font-medium text-white">{{ entry.to_status }}</span>
+                                    {% elif entry.to_status %}
+                                        Status set to <span class="font-medium text-white">{{ entry.to_status }}</span>
+                                    {% else %}
+                                        {{ entry.remarks }}
+                                    {% endif %}
+                                </p>
+                                {% if entry.remarks %}
+                                    <p class="mt-1 text-sm text-gray-400">{{ entry.remarks }}</p>
+                                {% endif %}
+                                <p class="mt-2 text-xs text-gray-500">
+                                    {{ entry.timestamp|timesince }} ago by {{ entry.changed_by.get_full_name|default:entry.changed_by.username }}
+                                </p>
+                            </div>
                         </div>
-                    {% else %}
-                        <p class="text-gray-500 text-sm">No history available.</p>
-                    {% endif %}
-                </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-gray-400 text-sm">No history available.</p>
+                {% endif %}
             </div>
         </div>
 
         <!-- Sidebar -->
         <div class="space-y-6">
-            <!-- User Information -->
-            <div class="bg-white shadow rounded-lg">
-                <div class="px-4 py-5 sm:p-6">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">User Information</h3>
-                    
-                    <div class="space-y-3">
+            <!-- Update Status Card -->
+            {% if can_update_status %}
+            <div class="glass rounded-2xl p-6">
+                <h3 class="text-lg font-semibold text-white mb-4">Update Status</h3>
+                <form method="post" action="{% url 'update_complaint_status' complaint.complaint_no %}">
+                    {% csrf_token %}
+                    <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Complainant</label>
-                            <p class="mt-1 text-sm text-gray-900">{{ complaint.user.get_full_name|default:complaint.user.username }}</p>
+                            <label for="status" class="block text-sm font-medium text-gray-400 mb-2">Status</label>
+                            <select name="status" id="status" required class="w-full px-4 py-3 rounded-xl glass border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#4dd0e1] transition-all">
+                                {% for value, label in complaint.STATUS_CHOICES %}
+                                    <option value="{{ value }}" {% if complaint.status == value %}selected{% endif %} class="bg-[#0d0f18]">{{ label }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
-                        
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Email</label>
-                            <p class="mt-1 text-sm text-gray-900">{{ complaint.user.email|default:"Not provided" }}</p>
+                            <label for="remarks" class="block text-sm font-medium text-gray-400 mb-2">Remarks (Optional)</label>
+                            <textarea name="remarks" id="remarks" rows="3" class="w-full px-4 py-3 rounded-xl glass border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#4dd0e1] transition-all" placeholder="Add any remarks..."></textarea>
                         </div>
-                        
-                        {% if complaint.user.profile %}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Department</label>
-                                <p class="mt-1 text-sm text-gray-900">{{ complaint.user.profile.department|default:"Not specified" }}</p>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Phone</label>
-                                <p class="mt-1 text-sm text-gray-900">{{ complaint.user.profile.phone|default:"Not provided" }}</p>
-                            </div>
-                        {% endif %}
+                        <button type="submit" class="w-full glass px-4 py-3 rounded-xl text-sm font-medium text-white hover:glow-teal transition-all bg-gradient-to-r from-[#4dd0e1] to-[#b388ff]">
+                            Update Status
+                        </button>
                     </div>
+                </form>
+            </div>
+            {% endif %}
+
+            <!-- User Information -->
+            <div class="glass rounded-2xl p-6">
+                <h3 class="text-lg font-semibold text-white mb-4">User Information</h3>
+                
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400">Complainant</label>
+                        <p class="mt-1 text-sm text-white">{{ complaint.user.get_full_name|default:complaint.user.username }}</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400">Email</label>
+                        <p class="mt-1 text-sm text-gray-300">{{ complaint.user.email|default:"Not provided" }}</p>
+                    </div>
+                    
+                    {% if complaint.user.profile %}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400">Department</label>
+                            <p class="mt-1 text-sm text-gray-300">{{ complaint.user.profile.department|default:"Not specified" }}</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400">Phone</label>
+                            <p class="mt-1 text-sm text-gray-300">{{ complaint.user.profile.phone|default:"Not provided" }}</p>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
 
             <!-- Assignment Information -->
             {% if complaint.assigned_to %}
-            <div class="bg-white shadow rounded-lg">
-                <div class="px-4 py-5 sm:p-6">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Assignment</h3>
-                    
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Assigned To</label>
-                            <p class="mt-1 text-sm text-gray-900">{{ complaint.assigned_to.get_full_name|default:complaint.assigned_to.username }}</p>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Email</label>
-                            <p class="mt-1 text-sm text-gray-900">{{ complaint.assigned_to.email|default:"Not provided" }}</p>
-                        </div>
-                        
-                        {% if complaint.assigned_to.profile %}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Department</label>
-                                <p class="mt-1 text-sm text-gray-900">{{ complaint.assigned_to.profile.department|default:"Not specified" }}</p>
-                            </div>
-                        {% endif %}
+            <div class="glass rounded-2xl p-6">
+                <h3 class="text-lg font-semibold text-white mb-4">Assignment</h3>
+                
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400">Assigned To</label>
+                        <p class="mt-1 text-sm text-white">{{ complaint.assigned_to.get_full_name|default:complaint.assigned_to.username }}</p>
                     </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400">Email</label>
+                        <p class="mt-1 text-sm text-gray-300">{{ complaint.assigned_to.email|default:"Not provided" }}</p>
+                    </div>
+                    
+                    {% if complaint.assigned_to.profile %}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400">Department</label>
+                            <p class="mt-1 text-sm text-gray-300">{{ complaint.assigned_to.profile.department|default:"Not specified" }}</p>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
             {% endif %}
 
             <!-- Feedback -->
             {% if feedback %}
-            <div class="bg-white shadow rounded-lg">
-                <div class="px-4 py-5 sm:p-6">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Feedback</h3>
+            <div class="glass rounded-2xl p-6">
+                <h3 class="text-lg font-semibold text-white mb-4">Feedback</h3>
+                
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400">Rating</label>
+                        <div class="mt-1 flex items-center">
+                            {% for i in "12345" %}
+                                <svg class="w-5 h-5 {% if forloop.counter <= feedback.rating %}text-yellow-400{% else %}text-gray-600{% endif %}" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                </svg>
+                            {% endfor %}
+                            <span class="ml-2 text-sm text-gray-400">{{ feedback.rating }}/5</span>
+                        </div>
+                    </div>
                     
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Rating</label>
-                            <div class="mt-1 flex items-center">
-                                {% for i in "12345" %}
-                                    <svg class="w-5 h-5 {% if forloop.counter <= feedback.rating %}text-yellow-400{% else %}text-gray-300{% endif %}" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                    </svg>
-                                {% endfor %}
-                                <span class="ml-2 text-sm text-gray-600">{{ feedback.rating }}/5</span>
-                            </div>
-                        </div>
-                        
-                        {% if feedback.comments %}
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Comments</label>
-                            <p class="mt-1 text-sm text-gray-900">{{ feedback.comments }}</p>
-                        </div>
-                        {% endif %}
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Submitted</label>
-                            <p class="mt-1 text-sm text-gray-900">{{ feedback.created_at|date:"M d, Y H:i" }}</p>
-                        </div>
+                    {% if feedback.comments %}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400">Comments</label>
+                        <p class="mt-1 text-sm text-gray-300">{{ feedback.comments }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400">Submitted</label>
+                        <p class="mt-1 text-sm text-gray-300">{{ feedback.created_at|date:"M d, Y H:i" }}</p>
                     </div>
                 </div>
             </div>
             {% elif can_feedback %}
-            <div class="bg-white shadow rounded-lg">
-                <div class="px-4 py-5 sm:p-6">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Feedback</h3>
-                    <p class="text-sm text-gray-600 mb-4">This complaint has been resolved. Please provide your feedback.</p>
-                    <a href="{% url 'add_feedback' complaint.complaint_no %}" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:shadow-lg">
-                        Add Feedback
-                    </a>
-                </div>
+            <div class="glass rounded-2xl p-6">
+                <h3 class="text-lg font-semibold text-white mb-4">Feedback</h3>
+                <p class="text-sm text-gray-400 mb-4">This complaint has been resolved. Please provide your feedback.</p>
+                <a href="{% url 'add_feedback' complaint.complaint_no %}" class="block w-full text-center glass px-4 py-3 rounded-xl text-sm font-medium text-white hover:glow-teal transition-all bg-gradient-to-r from-[#4dd0e1] to-[#b388ff]">
+                    Add Feedback
+                </a>
             </div>
             {% endif %}
         </div>

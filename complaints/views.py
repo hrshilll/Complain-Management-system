@@ -50,21 +50,24 @@ def dashboard(request):
     """Role-aware dashboard"""
     user_profile = getattr(request.user, 'profile', None)
     
-    if not user_profile:
+    # Admin users (staff/superuser) have full access even without profile
+    is_admin = request.user.is_staff or request.user.is_superuser
+    
+    if not user_profile and not is_admin:
         messages.error(request, "User profile not found. Please contact administrator.")
         return redirect('logout')
     
-    role = user_profile.role
+    role = user_profile.role if user_profile else ('admin' if is_admin else 'student')
     
     # Get complaint statistics based on role
-    if role == 'admin':
+    if role == 'admin' or is_admin:
         complaints = Complaint.objects.all()
         stats = {
             'total': complaints.count(),
             'pending': complaints.filter(status='PENDING').count(),
-            'in_progress': complaints.filter(status='IN_PROGRESS').count(),
+            'in_progress': complaints.filter(status='PROCESSING').count(),
             'resolved': complaints.filter(status='RESOLVED').count(),
-            'closed': complaints.filter(status='CLOSED').count(),
+            'closed': complaints.filter(status='COMPLETED').count(),
         }
         recent_complaints = complaints.order_by('-created_at')[:10]
         
@@ -74,9 +77,9 @@ def dashboard(request):
         stats = {
             'total': complaints.count(),
             'pending': complaints.filter(status='PENDING').count(),
-            'in_progress': complaints.filter(status='IN_PROGRESS').count(),
+            'in_progress': complaints.filter(status='PROCESSING').count(),
             'resolved': complaints.filter(status='RESOLVED').count(),
-            'closed': complaints.filter(status='CLOSED').count(),
+            'closed': complaints.filter(status='COMPLETED').count(),
         }
         recent_complaints = complaints.order_by('-created_at')[:10]
         
@@ -88,9 +91,9 @@ def dashboard(request):
         stats = {
             'total': complaints.count(),
             'pending': complaints.filter(status='PENDING').count(),
-            'in_progress': complaints.filter(status='IN_PROGRESS').count(),
+            'in_progress': complaints.filter(status='PROCESSING').count(),
             'resolved': complaints.filter(status='RESOLVED').count(),
-            'closed': complaints.filter(status='CLOSED').count(),
+            'closed': complaints.filter(status='COMPLETED').count(),
         }
         recent_complaints = complaints.order_by('-created_at')[:10]
         
@@ -99,20 +102,16 @@ def dashboard(request):
         stats = {
             'total': complaints.count(),
             'pending': complaints.filter(status='PENDING').count(),
-            'in_progress': complaints.filter(status='IN_PROGRESS').count(),
+            'in_progress': complaints.filter(status='PROCESSING').count(),
             'resolved': complaints.filter(status='RESOLVED').count(),
-            'closed': complaints.filter(status='CLOSED').count(),
+            'closed': complaints.filter(status='COMPLETED').count(),
         }
         recent_complaints = complaints.order_by('-created_at')[:10]
-    
-    # Get notifications
-    notifications = Notification.objects.filter(user=request.user, is_read=False).order_by('-created_at')[:5]
     
     context = {
         'role': role,
         'stats': stats,
         'recent_complaints': recent_complaints,
-        'notifications': notifications,
     }
     
     return render(request, 'complaints/dashboard.html', context)
@@ -122,10 +121,13 @@ def dashboard(request):
 def complaint_list(request):
     """List complaints with filtering"""
     user_profile = getattr(request.user, 'profile', None)
-    role = user_profile.role if user_profile else 'student'
+    
+    # Admin users (staff/superuser) have full access
+    is_admin = request.user.is_staff or request.user.is_superuser
+    role = user_profile.role if user_profile else ('admin' if is_admin else 'student')
     
     # Base queryset based on role
-    if role == 'admin':
+    if role == 'admin' or is_admin:
         complaints = Complaint.objects.all()
     elif role == 'hod':
         # HOD sees complaints assigned to them (from faculty)
@@ -176,13 +178,17 @@ def complaint_detail(request, complaint_no):
     user_profile = getattr(request.user, 'profile', None)
     role = user_profile.role if user_profile else 'student'
     
+    # Admin users (staff/superuser) have full access
+    is_admin = request.user.is_staff or request.user.is_superuser
+    
     # Check permissions
-    if role == 'student' and complaint.user != request.user:
-        raise Http404("Complaint not found")
-    elif role == 'faculty' and complaint.assigned_to != request.user and complaint.user != request.user and not request.user.is_staff:
-        raise Http404("Complaint not found")
-    elif role == 'hod' and complaint.assigned_to != request.user and not request.user.is_staff:
-        raise Http404("Complaint not found")
+    if not is_admin:
+        if role == 'student' and complaint.user != request.user:
+            raise Http404("Complaint not found")
+        elif role == 'faculty' and complaint.assigned_to != request.user and complaint.user != request.user:
+            raise Http404("Complaint not found")
+        elif role == 'hod' and complaint.assigned_to != request.user:
+            raise Http404("Complaint not found")
     
     # Get complaint history
     history = complaint.history.all().order_by('-timestamp')
@@ -199,12 +205,13 @@ def complaint_detail(request, complaint_no):
         'feedback': feedback,
         'role': role,
         'can_edit': (
-            role == 'admin' or 
+            is_admin or 
             (role == 'hod' and complaint.assigned_to == request.user) or
             (role == 'faculty' and (complaint.assigned_to == request.user or complaint.user == request.user)) or
             (role == 'student' and complaint.user == request.user and complaint.status == 'PENDING')
         ),
-        'can_assign': role == 'admin',
+        'can_update_status': role in ['faculty', 'hod'],
+        'can_assign': is_admin,
         'can_feedback': (
             complaint.user == request.user and 
             complaint.status == 'RESOLVED' and 
@@ -275,10 +282,14 @@ def update_complaint(request, complaint_no):
     user_profile = getattr(request.user, 'profile', None)
     role = user_profile.role if user_profile else 'student'
     
+    # Admin users (staff/superuser) have full access
+    is_admin = request.user.is_staff or request.user.is_superuser
+    
     # Check permissions
     can_edit = (
-        role == 'admin' or 
-        (role == 'faculty' and complaint.assigned_to == request.user) or
+        is_admin or 
+        (role == 'hod' and complaint.assigned_to == request.user) or
+        (role == 'faculty' and (complaint.assigned_to == request.user or complaint.user == request.user)) or
         (role == 'student' and complaint.user == request.user and complaint.status == 'PENDING')
     )
     
@@ -291,7 +302,7 @@ def update_complaint(request, complaint_no):
         old_assigned_to = complaint.assigned_to
         
         # Update fields based on role
-        if role == 'admin':
+        if is_admin:
             complaint.status = request.POST.get('status', complaint.status)
             complaint.admin_remarks = request.POST.get('admin_remarks', complaint.admin_remarks)
         elif role == 'hod':
@@ -368,6 +379,12 @@ def assign_complaint(request, complaint_no):
         
         if faculty_id:
             faculty = get_object_or_404(User, id=faculty_id)
+            
+            # Security check: Only superusers can assign to HOD
+            if hasattr(faculty, 'profile') and faculty.profile.role == 'hod' and not request.user.is_superuser:
+                messages.error(request, "Only superusers can assign complaints to HOD.")
+                return redirect('complaint_detail', complaint_no=complaint_no)
+            
             old_assigned_to = complaint.assigned_to
             complaint.assigned_to = faculty
             complaint.save()
@@ -409,8 +426,11 @@ def assign_complaint(request, complaint_no):
         else:
             messages.error(request, "Please select a faculty member.")
     
-    # Get available faculty and HOD for assignment
-    faculty_members = User.objects.filter(profile__role__in=['faculty', 'hod'])
+    # Get available faculty and HOD for assignment (HOD only for superusers)
+    if request.user.is_superuser:
+        faculty_members = User.objects.filter(profile__role__in=['faculty', 'hod'])
+    else:
+        faculty_members = User.objects.filter(profile__role='faculty')
     
     context = {
         'complaint': complaint,
@@ -454,7 +474,7 @@ def add_feedback(request, complaint_no):
 
 
 def register(request):
-    """User registration"""
+    """User registration - HOD registration is not allowed"""
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
         if form.is_valid():
@@ -464,6 +484,11 @@ def register(request):
             department = form.cleaned_data['department']
             user_type = form.cleaned_data['user_type']
             category = form.cleaned_data.get('category') or ''
+            
+            # Security check: Prevent HOD registration
+            if user_type == 'hod':
+                messages.error(request, "HOD accounts can only be created by administrators.")
+                return render(request, 'complaints/register.html', {'form': form})
             
             # Create user
             user = User.objects.create_user(
@@ -480,15 +505,13 @@ def register(request):
                 phone=form.cleaned_data.get('phone', ''),
                 age=form.cleaned_data.get('age')
             )
-            if user_type in ['faculty', 'hod'] and category:
+            if user_type == 'faculty' and category:
                 profile.category = category
                 profile.save(update_fields=['category'])
             
             # Add to appropriate group
             if user_type == 'faculty':
                 group_name = 'Faculty'
-            elif user_type == 'hod':
-                group_name = 'HOD'
             else:
                 group_name = 'Student'
             group, _ = Group.objects.get_or_create(name=group_name)
@@ -682,9 +705,9 @@ def complaint_stats(request):
     stats = {
         'total_complaints': complaints.count(),
         'pending_complaints': complaints.filter(status='PENDING').count(),
-        'in_progress_complaints': complaints.filter(status='IN_PROGRESS').count(),
+        'in_progress_complaints': complaints.filter(status='PROCESSING').count(),
         'resolved_complaints': complaints.filter(status='RESOLVED').count(),
-        'closed_complaints': complaints.filter(status='CLOSED').count(),
+        'closed_complaints': complaints.filter(status='COMPLETED').count(),
     }
     
     # Calculate average resolution time
@@ -841,3 +864,68 @@ def faculty_dashboard_legacy(request):
 def student_complaints_legacy(request):
     """Legacy student complaints view"""
     return complaint_list(request)
+
+
+@login_required
+def faculty_directory(request):
+    """Faculty directory page showing all faculty and HOD members"""
+    # Get all users with faculty or hod role
+    faculty_members = UserProfile.objects.filter(
+        role__in=['faculty', 'hod']
+    ).select_related('user').order_by('role', 'department', 'user__last_name', 'user__first_name')
+    
+    context = {
+        'faculty_members': faculty_members,
+    }
+    
+    return render(request, 'complaints/faculty_directory.html', context)
+
+
+@login_required
+def update_complaint_status(request, complaint_no):
+    """Update complaint status for faculty and HOD"""
+    complaint = get_object_or_404(Complaint, complaint_no=complaint_no)
+    user_profile = getattr(request.user, 'profile', None)
+    role = user_profile.role if user_profile else 'student'
+    
+    # Check permissions
+    if role not in ['faculty', 'hod']:
+        messages.error(request, "You don't have permission to update complaint status.")
+        return redirect('complaint_detail', complaint_no=complaint_no)
+    
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        remarks = request.POST.get('remarks', '')
+        
+        if new_status not in dict(Complaint.STATUS_CHOICES):
+            messages.error(request, "Invalid status selected.")
+            return redirect('complaint_detail', complaint_no=complaint_no)
+        
+        old_status = complaint.status
+        complaint.status = new_status
+        
+        if new_status == 'RESOLVED' and not complaint.resolved_at:
+            complaint.resolved_at = timezone.now()
+        
+        complaint.save()
+        
+        # Create history entry
+        ComplaintHistory.objects.create(
+            complaint=complaint,
+            changed_by=request.user,
+            from_status=old_status,
+            to_status=new_status,
+            remarks=remarks or f"Status updated to {complaint.get_status_display()}"
+        )
+        
+        # Send notification to user
+        Notification.objects.create(
+            user=complaint.user,
+            message=f"Complaint {complaint.complaint_no} status updated to {complaint.get_status_display()}"
+        )
+        
+        messages.success(request, f"Complaint status updated to {complaint.get_status_display()} successfully!")
+        return redirect('complaint_detail', complaint_no=complaint_no)
+    
+    messages.error(request, "Invalid request method.")
+    return redirect('complaint_detail', complaint_no=complaint_no)

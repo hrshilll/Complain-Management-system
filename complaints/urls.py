@@ -19,7 +19,9 @@ urlpatterns = [
     path('complaints/<str:complaint_no>/edit/', views.update_complaint, name='update_complaint'),
     path('complaints/<str:complaint_no>/assign/', views.assign_complaint, name='assign_complaint'),
     path('complaints/<str:complaint_no>/feedback/', views.add_feedback, name='add_feedback'),
+    path('complaints/<str:complaint_no>/update-status/', views.update_complaint_status, name='update_complaint_status'),
     path('register/', views.register, name='register'),
+    path('faculty-directory/', views.faculty_directory, name='faculty_directory'),
     
     # Legacy URLs for backward compatibility
     path('my-complaints/', views.student_complaints_legacy, name='student_complaints'),

@@ -20,6 +20,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'role', 'phone', 'department', 'category', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
+    
+    def validate_role(self, value):
+        """Prevent non-superusers from setting role to HOD"""
+        request = self.context.get('request')
+        if value == 'hod' and (not request or not request.user.is_superuser):
+            raise serializers.ValidationError("Only superusers can set role to HOD.")
+        return value
 
 
 class ComplaintListSerializer(serializers.ModelSerializer):
@@ -140,15 +147,22 @@ class ComplaintUpdateSerializer(serializers.ModelSerializer):
 class ComplaintAssignmentSerializer(serializers.Serializer):
     """Serializer for assigning complaints"""
     assigned_to = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.filter(profile__role='faculty'),
+        queryset=User.objects.filter(profile__role__in=['faculty', 'hod']),
         required=True
     )
     remarks = serializers.CharField(required=False, allow_blank=True)
     
     def validate_assigned_to(self, value):
-        """Validate assignment"""
-        if not hasattr(value, 'profile') or value.profile.role != 'faculty':
-            raise serializers.ValidationError("Can only assign to faculty members")
+        """Validate assignment - only superusers can assign to HOD"""
+        request = self.context.get('request')
+        if not hasattr(value, 'profile'):
+            raise serializers.ValidationError("Selected user does not have a profile.")
+        
+        if value.profile.role == 'hod' and (not request or not request.user.is_superuser):
+            raise serializers.ValidationError("Only superusers can assign complaints to HOD.")
+        
+        if value.profile.role not in ['faculty', 'hod']:
+            raise serializers.ValidationError("Can only assign to faculty members or HOD.")
         return value
 
 

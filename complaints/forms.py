@@ -13,7 +13,6 @@ class UserRegisterForm(forms.Form):
     USER_TYPE_CHOICES = [
         ('student', 'Student'),
         ('faculty', 'Faculty'),
-        ('hod', 'HOD'),
     ]
     CATEGORY_CHOICES = [('', 'Select Category')] + list(ProfileModel.CATEGORY_CHOICES)
     
@@ -188,6 +187,13 @@ class UserRegisterForm(forms.Form):
         if age > 120:
             raise forms.ValidationError("Please enter a valid age")
         return age
+    
+    def clean_user_type(self):
+        """Prevent HOD registration through form"""
+        user_type = self.cleaned_data.get('user_type')
+        if user_type == 'hod':
+            raise forms.ValidationError("HOD accounts can only be created by administrators.")
+        return user_type
 
 
 class ComplaintForm(forms.ModelForm):
@@ -306,13 +312,24 @@ class FeedbackForm(forms.ModelForm):
 
 class ComplaintAssignmentForm(forms.Form):
     """Complaint assignment form"""
-    assigned_to = forms.ModelChoiceField(
-        queryset=User.objects.filter(profile__role__in=['faculty', 'hod']),
-        empty_label="Select Faculty Member or HOD",
-        widget=forms.Select(attrs={
-            'class': 'form-control'
-        })
-    )
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        # Only show HOD in assignment if user is superuser
+        if user and user.is_superuser:
+            queryset = User.objects.filter(profile__role__in=['faculty', 'hod'])
+            empty_label = "Select Faculty Member or HOD"
+        else:
+            queryset = User.objects.filter(profile__role='faculty')
+            empty_label = "Select Faculty Member"
+        
+        self.fields['assigned_to'] = forms.ModelChoiceField(
+            queryset=queryset,
+            empty_label=empty_label,
+            widget=forms.Select(attrs={
+                'class': 'form-control'
+            })
+        )
     remarks = forms.CharField(
         required=False,
         widget=forms.Textarea(attrs={
@@ -362,6 +379,15 @@ class ProfileUpdateForm(forms.ModelForm):
                 'class': 'form-control',
             }),
         }
+    
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        # Prevent non-superusers from changing role to HOD
+        if user and not user.is_superuser:
+            # Remove role field if it exists
+            if 'role' in self.fields:
+                del self.fields['role']
 
 
 class UserUpdateForm(forms.ModelForm):

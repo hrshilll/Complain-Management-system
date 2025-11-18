@@ -13,6 +13,16 @@ class UserProfileInline(admin.StackedInline):
     can_delete = False
     verbose_name_plural = 'Profile'
     fields = ('role', 'phone', 'department', 'category')
+    
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        # Only superusers can set role to HOD
+        if not request.user.is_superuser:
+            form.base_fields['role'].choices = [
+                choice for choice in form.base_fields['role'].choices 
+                if choice[0] != 'hod'
+            ]
+        return form
 
 
 class CustomUserAdmin(UserAdmin):
@@ -43,6 +53,25 @@ class UserProfileAdmin(admin.ModelAdmin):
     list_filter = ('role', 'category', 'department', 'created_at')
     search_fields = ('user__username', 'user__first_name', 'user__last_name', 'phone', 'department', 'category')
     readonly_fields = ('created_at', 'updated_at')
+    
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        # Only superusers can set role to HOD
+        if not request.user.is_superuser:
+            if 'role' in form.base_fields:
+                form.base_fields['role'].choices = [
+                    choice for choice in form.base_fields['role'].choices 
+                    if choice[0] != 'hod'
+                ]
+        return form
+    
+    def save_model(self, request, obj, form, change):
+        # Prevent non-superusers from creating/updating HOD profiles
+        if obj.role == 'hod' and not request.user.is_superuser:
+            from django.contrib import messages
+            messages.error(request, "Only superusers can create or modify HOD accounts.")
+            return
+        super().save_model(request, obj, form, change)
 
 
 class ComplaintHistoryInline(admin.TabularInline):
