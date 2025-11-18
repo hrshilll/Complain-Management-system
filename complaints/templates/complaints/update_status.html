@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Update Complaint Status</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-5">
+    <h1>Update Complaint: {{ complaint.title }}</h1>
+
+    <form method="POST" class="mt-4">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label">Status:</label>
+            <select name="status" class="form-select">
+                <option value="Pending" {% if complaint.status == "Pending" %}selected{% endif %}>Pending</option>
+                <option value="In Progress" {% if complaint.status == "In Progress" %}selected{% endif %}>In Progress</option>
+                <option value="Resolved" {% if complaint.status == "Resolved" %}selected{% endif %}>Resolved</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-success">Update</button>
+        <a class="btn btn-secondary" href="{% url 'complaint_list' %}">Back</a>
+    </form>
+</body>
+</html>
