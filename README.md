@@ -1,4 +1,4 @@
-# Complaint Management System (CMS)
+# Complain-Management-system
 
 A full-featured Django web application for managing complaints in educational institutions. Supports multiple user roles (Admin, Faculty, Student) with role-based permissions, complete audit trails, file attachments, and a REST API.
 
