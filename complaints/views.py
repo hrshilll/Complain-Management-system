@@ -205,13 +205,11 @@ def complaint_detail(request, complaint_no):
         'feedback': feedback,
         'role': role,
         'can_edit': (
-            is_admin or 
-            (role == 'hod' and complaint.assigned_to == request.user) or
-            (role == 'faculty' and (complaint.assigned_to == request.user or complaint.user == request.user)) or
+            # Only students can edit their own pending complaints
             (role == 'student' and complaint.user == request.user and complaint.status == 'PENDING')
         ),
         'can_update_status': role in ['faculty', 'hod'],
-        'can_assign': is_admin,
+        'can_assign': False,  # Removed for HOD/admin
         'can_feedback': (
             complaint.user == request.user and 
             complaint.status == 'RESOLVED' and 
