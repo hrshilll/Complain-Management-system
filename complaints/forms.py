@@ -207,23 +207,23 @@ class ComplaintForm(forms.ModelForm):
         ]
         widgets = {
             'title': forms.TextInput(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-4 py-3 rounded-xl glass border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#4dd0e1] transition-all',
                 'placeholder': 'Enter complaint title'
             }),
             'category': forms.Select(attrs={
-                'class': 'form-control'
+                'class': 'w-full px-4 py-3 rounded-xl glass border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#4dd0e1] transition-all bg-[#0d0f18]'
             }),
             'description': forms.Textarea(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-4 py-3 rounded-xl glass border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#4dd0e1] transition-all',
                 'rows': 5,
                 'placeholder': 'Describe your complaint in detail'
             }),
             'attachment': forms.FileInput(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-4 py-3 rounded-xl glass border border-white/10 text-white file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[#4dd0e1]/20 file:text-[#4dd0e1] hover:file:bg-[#4dd0e1]/30 cursor-pointer',
                 'accept': '.pdf,.jpg,.jpeg,.png,.docx'
             }),
             'remarks': forms.Textarea(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-4 py-3 rounded-xl glass border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#4dd0e1] transition-all',
                 'rows': 3,
                 'placeholder': 'Additional remarks (optional)'
             }),

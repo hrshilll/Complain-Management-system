@@ -2,97 +2,121 @@
 
 {% block title %}Create Complaint - Complaint Management System{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* File input styling */
+    input[type="file"]::file-selector-button {
+        margin-right: 1rem;
+        padding: 0.5rem 1rem;
+        border-radius: 0.75rem;
+        border: none;
+        background: rgba(77, 208, 225, 0.2);
+        color: #4dd0e1;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    input[type="file"]::file-selector-button:hover {
+        background: rgba(77, 208, 225, 0.3);
+    }
+    
+    /* Select dropdown styling */
+    select {
+        color-scheme: dark;
+    }
+    
+    select option {
+        background: #0d0f18;
+        color: #e2e8f0;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="max-w-3xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+<div class="max-w-4xl mx-auto fade-in">
     <!-- Header -->
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Create New Complaint</h1>
-        <p class="mt-2 text-gray-600">Submit a new complaint for resolution</p>
+        <h1 class="text-3xl font-bold text-white mb-2">Create New Complaint</h1>
+        <p class="text-gray-400">Submit a new complaint for resolution</p>
     </div>
 
-    <!-- Form -->
-    <div class="bg-rgb(43, 46, 66)-100 shadow rounded-lg">
-        <div class="px-4 py-5 sm:p-6">
-            <form method="post" enctype="multipart/form-data" class="space-y-6">
-                {% csrf_token %}
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="md:col-span-2">
-                        <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                            {{ form.title.label }} <span class="text-red-500">*</span>
-                        </label>
-                        {{ form.title }}
-                        {% if form.title.errors %}
-                            <div class="mt-1 text-sm text-red-600">
-                                {{ form.title.errors.0 }}
-                            </div>
-                        {% endif %}
-                    </div>
+    <!-- Form Card -->
+    <div class="glass rounded-2xl p-8">
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
 
-                    <div>
-                        <label for="{{ form.category.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                            {{ form.category.label }} <span class="text-red-500">*</span>
-                        </label>
-                        {{ form.category }}
-                        {% if form.category.errors %}
-                            <div class="mt-1 text-sm text-red-600">
-                                {{ form.category.errors.0 }}
-                            </div>
-                        {% endif %}
-                    </div>
+            <!-- Title -->
+            <div>
+                <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
+                    {{ form.title.label }} <span class="text-red-400">*</span>
+                </label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                    <p class="text-red-400 text-sm mt-1">{{ form.title.errors.0 }}</p>
+                {% endif %}
+            </div>
 
+            <!-- Category -->
+            <div>
+                <label for="{{ form.category.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
+                    {{ form.category.label }} <span class="text-red-400">*</span>
+                </label>
+                {{ form.category }}
+                {% if form.category.errors %}
+                    <p class="text-red-400 text-sm mt-1">{{ form.category.errors.0 }}</p>
+                {% endif %}
+            </div>
 
-                    <div class="md:col-span-2">
-                        <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                            {{ form.description.label }} <span class="text-red-500">*</span>
-                        </label>
-                        {{ form.description }}
-                        {% if form.description.errors %}
-                            <div class="mt-1 text-sm text-red-600">
-                                {{ form.description.errors.0 }}
-                            </div>
-                        {% endif %}
-                    </div>
+            <!-- Description -->
+            <div>
+                <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
+                    {{ form.description.label }} <span class="text-red-400">*</span>
+                </label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                    <p class="text-red-400 text-sm mt-1">{{ form.description.errors.0 }}</p>
+                {% endif %}
+            </div>
 
-                    <div class="md:col-span-2">
-                        <label for="{{ form.attachment.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                            {{ form.attachment.label }}
-                        </label>
-                        {{ form.attachment }}
-                        {% if form.attachment.errors %}
-                            <div class="mt-1 text-sm text-red-600">
-                                {{ form.attachment.errors.0 }}
-                            </div>
-                        {% endif %}
-                        <p class="mt-1 text-sm text-gray-500">
-                            Maximum file size: 10MB. Allowed formats: PDF, JPG, PNG, DOCX
-                        </p>
-                    </div>
+            <!-- Attachment -->
+            <div>
+                <label for="{{ form.attachment.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
+                    {{ form.attachment.label }}
+                </label>
+                {{ form.attachment }}
+                {% if form.attachment.errors %}
+                    <p class="text-red-400 text-sm mt-1">{{ form.attachment.errors.0 }}</p>
+                {% endif %}
+                <p class="text-gray-500 text-sm mt-2">
+                    Maximum file size: 10MB • Allowed formats: PDF, JPG, PNG, DOCX
+                </p>
+            </div>
 
-                    <div class="md:col-span-2">
-                        <label for="{{ form.remarks.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                            {{ form.remarks.label }}
-                        </label>
-                        {{ form.remarks }}
-                        {% if form.remarks.errors %}
-                            <div class="mt-1 text-sm text-red-600">
-                                {{ form.remarks.errors.0 }}
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
+            <!-- Remarks -->
+            <div>
+                <label for="{{ form.remarks.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
+                    {{ form.remarks.label }}
+                </label>
+                {{ form.remarks }}
+                {% if form.remarks.errors %}
+                    <p class="text-red-400 text-sm mt-1">{{ form.remarks.errors.0 }}</p>
+                {% endif %}
+            </div>
 
-                <div class="flex justify-end space-x-3">
-                    <a href="{% url 'complaint_list' %}" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">
-                        Cancel
-                    </a>
-                    <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:shadow-lg">
-                        Submit Complaint
-                    </button>
-                </div>
-            </form>
-        </div>
+            <!-- Buttons -->
+            <div class="flex justify-end space-x-4 pt-4 border-t border-white/10">
+                <a href="{% url 'complaint_list' %}" 
+                   class="glass px-6 py-3 rounded-xl text-sm font-medium text-white hover:glow-teal transition-all">
+                    Cancel
+                </a>
+                <button type="submit" 
+                        class="glass px-6 py-3 rounded-xl text-sm font-medium text-white hover:glow-teal transition-all bg-gradient-to-r from-[#4dd0e1] to-[#b388ff]">
+                    Submit Complaint
+                </button>
+            </div>
+        </form>
     </div>
 </div>
-
 {% endblock %}
