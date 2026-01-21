@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+
+{% block title %}Complaints - Complaint Management System{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-white mb-2">Complaints</h1>
+                <p class="text-gray-400">Manage and track all complaints</p>
+            </div>
+            {% if role == 'student' or role == 'faculty' %}
+                <a href="{% url 'create_complaint' %}" class="glass px-6 py-3 rounded-xl text-sm font-medium text-white hover:glow-teal transition-all bg-gradient-to-r from-[#4dd0e1] to-[#b388ff]">
+                    Create New Complaint
+                </a>
+            {% endif %}
+        </div>
+    </div>
+{% if role == 'faculty' %}
+<div class="mb-6 flex space-x-6">
+    <a href="?tab=assigned"
+       class="text-sm font-medium
+       {% if request.GET.tab != 'mine' %}
+           text-[#4dd0e1] border-b-2 border-[#4dd0e1]
+       {% else %}
+           text-gray-400 hover:text-white
+       {% endif %}">
+        Assigned Complaints
+    </a>
+
+    <a href="?tab=mine"
+       class="text-sm font-medium
+       {% if request.GET.tab == 'mine' %}
+           text-[#4dd0e1] border-b-2 border-[#4dd0e1]
+       {% else %}
+           text-gray-400 hover:text-white
+       {% endif %}">
+        My Complaints
+    </a>
+</div>
+{% endif %}
+
+{% if role == 'hod' %}
+<div class="mb-6 flex space-x-6">
+    <a href="?tab=student"
+       class="text-sm font-medium
+       {% if tab != 'faculty' %}
+           text-[#4dd0e1] border-b-2 border-[#4dd0e1]
+       {% else %}
+           text-gray-400 hover:text-white
+       {% endif %}">
+        Student Complaints
+    </a>
+
+    <a href="?tab=faculty"
+       class="text-sm font-medium
+       {% if tab == 'faculty' %}
+           text-[#4dd0e1] border-b-2 border-[#4dd0e1]
+       {% else %}
+           text-gray-400 hover:text-white
+       {% endif %}">
+        Faculty Complaints
+    </a>
+</div>
+{% endif %}
+
+    <!-- Complaints Table -->
+    <div class="glass rounded-2xl p-6">
+        {% if page_obj %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-white/10">
+                    <thead>
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Complaint No</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Title</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Category</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">User</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Assigned To</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Created</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/10">
+                        {% for complaint in page_obj %}
+                        <tr class="hover:bg-white/5 transition-colors">
+
+                            <!-- Complaint No -->
+                            <td class="px-4 py-3 text-sm text-white">
+                                {{ complaint.complaint_no }}
+                            </td>
+
+                            <!-- Title -->
+                            <td class="px-4 py-3 text-sm text-gray-300">
+                                {{ complaint.title|truncatechars:50 }}
+                            </td>
+
+                            <!-- Category + SubCategory -->
+                            <td class="px-4 py-3">
+                                <div class="px-2 py-1 text-xs font-semibold rounded-full bg-[#b388ff]/20 text-[#b388ff] inline-block">
+                                    {{ complaint.category }}
+                                </div>
+                                <div class="text-xs text-gray-400 mt-1">
+                                    {{ complaint.subcategory }}
+                                </div>
+                            </td>
+
+                            <!-- User -->
+                            <td class="px-4 py-3 text-sm text-gray-300">
+                                {{ complaint.user.get_full_name|default:complaint.user.username }}
+                            </td>
+
+                            <!-- Assigned Faculty -->
+                            <td class="px-4 py-3 text-sm text-gray-300">
+                                {% if complaint.assigned_to %}
+                                    {{ complaint.assigned_to.get_full_name|default:complaint.assigned_to.username }}
+                                {% else %}
+                                    <span class="text-gray-500">Unassigned</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Status -->
+                            <td class="px-4 py-3">
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                    {% if complaint.status == 'PENDING' %}
+                                        bg-yellow-500/20 text-yellow-300
+                                    {% elif complaint.status == 'PROCESSING' %}
+                                        bg-blue-500/20 text-blue-300
+                                    {% elif complaint.status == 'RESOLVED' %}
+                                        bg-green-500/20 text-green-300
+                                    {% elif complaint.status == 'REJECTED' %}
+                                        bg-red-500/20 text-red-300
+                                    {% else %}
+                                        bg-gray-500/20 text-gray-300
+                                    {% endif %}
+                                ">
+                                    {{ complaint.get_status_display }}
+                                </span>
+                            </td>
+
+                            <!-- Created Date -->
+                            <td class="px-4 py-3 text-sm text-gray-400">
+                                {{ complaint.created_at|date:"M d, Y" }}
+                            </td>
+
+                            <!-- Actions -->
+                            <td class="px-4 py-3 text-sm space-x-3">
+                            {% if complaint.complaint_no %}
+                                <a href="{% url 'complaint_detail' complaint.complaint_no %}">View</a>
+                            {% else %}
+                                <span class="text-red-400">Invalid</span>
+                            {% endif %}
+
+
+                                {% if role == 'admin' and not complaint.assigned_to %}
+                                    <a href="{% url 'assign_complaint' complaint.complaint_no %}"
+                                    class="text-green-400 hover:text-green-300 transition-colors">
+                                        Assign
+                                    </a>
+                                {% endif %}
+
+                                {% if role == 'faculty' and complaint.user == request.user and complaint.status == 'PENDING' %}
+                                    <a href="{% url 'update_complaint' complaint.complaint_no %}"
+                                    class="text-yellow-400 hover:text-yellow-300 transition-colors">
+                                        Edit
+                                    </a>
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="px-4 py-6 text-center text-gray-400">
+                                No complaints found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <div class="mt-6 flex items-center justify-between">
+                <div class="text-sm text-gray-400">
+                    Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} results
+                </div>
+                <div class="flex space-x-2">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                           class="glass px-4 py-2 rounded-xl text-sm font-medium text-white hover:glow-teal transition-all">
+                            Previous
+                        </a>
+                    {% endif %}
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                           class="glass px-4 py-2 rounded-xl text-sm font-medium text-white hover:glow-teal transition-all">
+                            Next
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-12">
+                <svg class="mx-auto h-12 w-12 text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <h3 class="text-sm font-medium text-gray-400 mb-2">No complaints found</h3>
+                <p class="text-sm text-gray-500 mb-4">Create a new complaint to get started.</p>
+                {% if role == 'student' or role == 'faculty' %}
+                    <a href="{% url 'create_complaint' %}" class="inline-flex items-center glass px-4 py-2 rounded-xl text-sm font-medium text-white hover:glow-teal transition-all">
+                        Create Complaint
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

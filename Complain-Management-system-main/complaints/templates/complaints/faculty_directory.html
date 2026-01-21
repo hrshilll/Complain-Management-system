@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Faculty Directory - Complaint Management System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .faculty-card {
+        transition: all 0.3s ease;
+    } 
+    
+    .faculty-card:hover {
+        transform: translateY(-5px) scale(1.02);
+    }  
+     
+    .avatar-initials {
+        background: linear-gradient(135deg, #4dd0e1 0%, #b388ff 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: white;
+    }
+    
+    .search-input {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .search-input:focus {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(77, 208, 225, 0.5);
+        box-shadow: 0 0 0 3px rgba(77, 208, 225, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+
+<div class="fade-in">
+    <!-- Header -->
+    <div class="mb-8 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-[#4dd0e1] via-[#b388ff] to-[#64b5f6] bg-clip-text text-transparent">
+            Faculty Directory
+        </h1>
+        <p class="text-gray-400 text-lg">Find and connect with faculty members and department heads</p>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="mb-8 glass rounded-2xl p-4">
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </div>
+            <input 
+                type="text" 
+                id="searchInput" 
+                placeholder="Search by name, department, or role..." 
+                class="w-full pl-12 pr-4 py-3 rounded-xl search-input text-white placeholder-gray-400 focus:outline-none transition-all"
+            >
+        </div>
+    </div>
+
+    <!-- Faculty Grid -->
+    <div id="facultyGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for faculty in faculty_members %}
+        <div class="faculty-card glass rounded-2xl p-6 hover-glow" data-name="{{ faculty.user.get_full_name|default:faculty.user.username|lower }}" data-department="{{ faculty.department|lower }}" data-role="{{ faculty.get_role_display|lower }}">
+            <div class="flex flex-col items-center text-center">
+                <!-- Avatar -->
+                <div class="mb-4">
+                    <div class="w-24 h-24 rounded-full avatar-initials text-2xl glass-strong border-2 border-white/20">
+                        {% with full_name=faculty.user.get_full_name|default:faculty.user.username %}
+                            {{ full_name|first|upper }}{% if full_name|length > 1 %}{{ full_name|slice:"1:2"|upper }}{% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+                
+                <!-- Name -->
+                <h3 class="text-xl font-bold text-white mb-1">{{ faculty.user.get_full_name|default:faculty.user.username }}</h3>
+                
+                <!-- Role Badge -->
+                <div class="mb-3">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {% if faculty.role == 'hod' %}bg-purple-500/20 text-purple-300{% else %}bg-teal-500/20 text-teal-300{% endif %}">
+                        {{ faculty.get_role_display }}
+                    </span>
+                </div>
+                
+                <!-- Department -->
+                <p class="text-gray-400 text-sm mb-4">{{ faculty.department|default:"Not specified" }}</p>
+                
+                <!-- Category (if exists) -->
+                {% if faculty.category %}
+                <p class="text-xs text-gray-500 mb-4">Category: {{ faculty.get_category_display }}</p>
+                {% endif %}
+                
+                <!-- Contact Info -->
+                <div class="w-full space-y-2 mt-4 pt-4 border-t border-white/10">
+                    {% if faculty.user.email %}
+                    <div class="flex items-center justify-center space-x-2 text-sm text-gray-300">
+                        <svg class="w-4 h-4 text-[#4dd0e1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        <a href="mailto:{{ faculty.user.email }}" class="hover:text-[#4dd0e1] transition-colors truncate">{{ faculty.user.email }}</a>
+                    </div>
+                    {% endif %}
+                    
+                    {% if faculty.phone %}
+                    <div class="flex items-center justify-center space-x-2 text-sm text-gray-300">
+                        <svg class="w-4 h-4 text-[#4dd0e1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                        </svg>
+                        <a href="tel:{{ faculty.phone }}" class="hover:text-[#4dd0e1] transition-colors">{{ faculty.phone }}</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-12">
+            <svg class="mx-auto h-16 w-16 text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+            <h3 class="text-lg font-medium text-gray-400 mb-2">No faculty members found</h3>
+            <p class="text-sm text-gray-500">There are no faculty members or HODs registered in the system.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('searchInput').addEventListener('input', function() {
+        const filter = this.value.toLowerCase();
+        const cards = document.querySelectorAll('.faculty-card');
+        
+        cards.forEach(card => {
+            const name = card.getAttribute('data-name');
+            const department = card.getAttribute('data-department');
+            const role = card.getAttribute('data-role');
+            
+            if (name.includes(filter) || department.includes(filter) || role.includes(filter)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

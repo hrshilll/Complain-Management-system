@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-6xl mx-auto">
+    <h2 class="text-2xl font-bold text-white mb-4">{{ title }}</h2>
+<div class="flex gap-6 mb-6">
+    <a href="?type=weekly"
+       class="{% if report_type == 'weekly' %}text-[#4dd0e1] border-b-2 border-[#4dd0e1]{% else %}text-gray-400{% endif %}">
+        Weekly
+    </a>
+
+    <a href="?type=monthly"
+       class="{% if report_type == 'monthly' %}text-[#4dd0e1] border-b-2 border-[#4dd0e1]{% else %}text-gray-400{% endif %}">
+        Monthly
+    </a>
+
+    <a href="?type=yearly"
+       class="{% if report_type == 'yearly' %}text-[#4dd0e1] border-b-2 border-[#4dd0e1]{% else %}text-gray-400{% endif %}">
+        Yearly
+    </a>
+</div>
+
+    <p class="text-gray-400 mb-6">
+        From {{ start_date }} to {{ end_date }}
+    </p>
+
+    <div class="grid grid-cols-5 gap-4 mb-6 text-center">
+        {% for key, value in stats.items %}
+        <div class="glass p-4 rounded-xl text-white">
+            <p class="text-sm uppercase text-gray-400">{{ key }}</p>
+            <p class="text-xl font-bold">{{ value }}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <a href="{% url 'complaint_report_pdf' %}?type={{ type }}"
+       class="px-4 py-2 rounded bg-[#4dd0e1]/30 text-[#4dd0e1]">
+        Download PDF
+    </a>
+
+    <table class="w-full mt-6 text-sm text-gray-300">
+        <thead class="border-b border-white/10">
+            <tr>
+                <th>Complaint No</th>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in complaints %}
+            <tr class="border-b border-white/5">
+                <td>{{ c.complaint_no }}</td>
+                <td>{{ c.title }}</td>
+                <td>{{ c.category.name }}</td>
+                <td>{{ c.status }}</td>
+                <td>{{ c.created_at|date:"d M Y" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
