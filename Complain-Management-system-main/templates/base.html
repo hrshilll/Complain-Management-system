@@ -291,13 +291,6 @@ select option:hover {
                 <div class="flex justify-between items-center h-16">
                     <div class="flex items-center">
                         <a href="{% url 'dashboard' %}" class="flex items-center space-x-2 group">
-                            {% if request.user.is_staff %}
-                                    <a href="{% url 'complaint_report' %}"
-                                    class="px-3 py-2 text-sm text-gray-300 hover:text-[#4dd0e1]">
-                                    Reports
-                                    </a>
-                                    {% endif %}
-
                             <div class="w-10 h-10 rounded-xl glass flex items-center justify-center group-hover:glow-teal transition-all">
                                 <span class="text-xl font-bold bg-gradient-to-r from-[#4dd0e1] to-[#b388ff] bg-clip-text text-transparent">CMS</span>
                             </div>

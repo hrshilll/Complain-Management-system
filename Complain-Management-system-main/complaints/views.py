@@ -831,55 +831,10 @@ def export_complaints(request):
         return response
     
     elif format_type == 'pdf':
-        from reportlab.lib.pagesizes import letter
-        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-        from reportlab.lib.styles import getSampleStyleSheet
-        from reportlab.lib import colors
-        import io
-        
-        buffer = io.BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=letter)
-        styles = getSampleStyleSheet()
-        story = []
-        
-        # Title
-        title = Paragraph("Complaints Report", styles['Title'])
-        story.append(title)
-        story.append(Spacer(1, 12))
-        
-        # Data table
-        data = [['Complaint No', 'Title', 'Status', 'User', 'Created At']]
-        
-        for complaint in complaints[:100]:  # Limit to 100 for PDF
-            data.append([
-                complaint.complaint_no,
-                complaint.title[:30] + '...' if len(complaint.title) > 30 else complaint.title,
-                complaint.get_status_display(),
-                complaint.user.get_full_name() or complaint.user.username,
-                complaint.created_at.strftime('%Y-%m-%d'),
-            ])
-        
-        table = Table(data)
-        table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 14),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black)
-        ]))
-        
-        story.append(table)
-        doc.build(story)
-        
-        response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="complaints_{timezone.now().strftime("%Y%m%d")}.pdf"'
-        
-        return response
+        # PDF export is only available through admin panel
+        return Response({'error': 'PDF export is only available through the admin panel'}, status=status.HTTP_403_FORBIDDEN)
     
-    return Response({'error': 'Invalid format'}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({'error': 'Invalid format. Only CSV export is available via API.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Legacy views for backward compatibility
@@ -993,74 +948,17 @@ def load_subcategories(request):
 
 @staff_member_required
 def complaint_report(request):
-    report_type = request.GET.get('type', 'weekly')
-    today = timezone.now()
-
-    if report_type == 'weekly':
-        start_date = today - timedelta(days=7)
-        title = "Weekly Complaint Report"
-    elif report_type == 'monthly':
-        start_date = today - timedelta(days=30)
-        title = "Monthly Complaint Report"
-    else:
-        start_date = today - timedelta(days=365)
-        title = "Yearly Complaint Report"
-
-    complaints = Complaint.objects.filter(created_at__gte=start_date)
-
-    stats = {
-        'total': complaints.count(),
-        'pending': complaints.filter(status='PENDING').count(),
-        'processing': complaints.filter(status='PROCESSING').count(),
-        'resolved': complaints.filter(status='RESOLVED').count(),
-        'rejected': complaints.filter(status='REJECTED').count(),
-    }
-
-    return render(request, 'complaints/report.html', {
-        'complaints': complaints,
-        'stats': stats,
-        'title': title,
-        'type': report_type,
-        'start_date': start_date.date(),
-        'end_date': today.date(),
-    })
-
-from django.utils import timezone
-from datetime import timedelta
-from django.contrib.admin.views.decorators import staff_member_required
+    """Redirect to admin panel for reports - PDF export is admin-only"""
+    from django.contrib import messages
+    messages.info(request, "Reports and PDF exports are available in the admin panel.")
+    return redirect('admin:complaints_complaint_changelist')
 
 @staff_member_required
-def complaint_report(request):
-    report_type = request.GET.get('type', 'weekly')
-    today = timezone.now()
-
-    if report_type == 'weekly':
-        start_date = today - timedelta(days=7)
-
-    elif report_type == 'monthly':
-        start_date = today.replace(day=1)
-
-    elif report_type == 'yearly':
-        start_date = today.replace(month=1, day=1)
-
-    else:
-        start_date = today - timedelta(days=7)
-
-    complaints = Complaint.objects.filter(
-        created_at__gte=start_date
-    ).order_by('-created_at')
-
-    context = {
-        'complaints': complaints,
-        'report_type': report_type,
-    }
-
-    return render(request, 'complaints/report.html', context)
-
-from django.http import HttpResponse
-
 def complaint_report_pdf(request):
-    return HttpResponse("PDF report coming soon")
+    """PDF export is only available through admin panel"""
+    from django.contrib import messages
+    messages.warning(request, "PDF export is only available through the admin panel.")
+    return redirect('admin:complaints_complaint_changelist')
 
 
 

@@ -1,6 +1,11 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
+from django.urls import reverse, path
+from django.utils.html import format_html
+from django.utils import timezone
+from datetime import datetime
+from django.http import HttpResponseRedirect
 
 from .models import (
     UserProfile,
@@ -9,6 +14,7 @@ from .models import (
     Feedback,
     Notification
 )
+from .admin_views import export_complaints_pdf
 
 
 # =========================
@@ -128,6 +134,7 @@ class ComplaintAdmin(admin.ModelAdmin):
     readonly_fields = ('complaint_no', 'created_at', 'resolved_at')
     inlines = [ComplaintHistoryInline]
     ordering = ('-created_at',)
+    change_list_template = 'admin/complaints/complaint/change_list.html'
 
     fieldsets = (
         ('Basic Information', {
@@ -147,6 +154,20 @@ class ComplaintAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('user', 'assigned_to')
+    
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('export-pdf/', self.admin_site.admin_view(export_complaints_pdf), name='complaints_complaint_export_pdf'),
+        ]
+        return custom_urls + urls
+    
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['pdf_export_url'] = reverse('admin:complaints_complaint_export_pdf')
+        extra_context['current_year'] = timezone.now().year
+        extra_context['current_month'] = timezone.now().month
+        return super().changelist_view(request, extra_context=extra_context)
 
 
 # =========================
